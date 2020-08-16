@@ -12,8 +12,7 @@ export class EnvCli {
 
     async main() {
 
-        this.envs = fs.readdirSync('./').filter((file) => file.lastIndexOf('.env') === 0);
-        console.log(this.envs);
+        this.envs = fs.readdirSync('./').filter((file) => file.indexOf('.env') > -1);
         this.options = (await prompts([{
             type: 'select',
             name: 'fileEnv',
@@ -140,7 +139,7 @@ export class EnvCli {
         this.whatToDo();
     }
     async saveAndContinue() {
-
+        this.save();
         this.whatToDo();
     }
     async save() {
@@ -157,26 +156,6 @@ export class EnvCli {
 
         /// KEY = PASS + HASH
         const KEY = Crypto.HmacSHA256(hash, this.options.pwd);
-
-        // console.info(KEY.toString());
-
-        //  let cipher = Crypto.AES.encrypt('teste', Crypto.enc.Utf8.parse(KEY.toString()), {
-        //      iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
-        //      padding: Crypto.pad.Pkcs7,
-        //      mode: Crypto.mode.CBC
-        //  }).toString();
-
-        // 
-        // console.info(cipher.toString());
-        // 
-        // 
-        // let qqq = Crypto.AES.decrypt(cipher, Crypto.enc.Utf8.parse(KEY.toString()), {
-        //     iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
-        //     padding: Crypto.pad.Pkcs7,
-        //     mode: Crypto.mode.CBC
-        // });
-        // 
-        // console.info(qqq.toString(Crypto.enc.Utf8));
 
         Object.keys(this.envParsed).forEach(prop => {
             let value = this.envParsed[prop];

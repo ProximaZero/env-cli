@@ -58,8 +58,7 @@ var EnvCli = (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        this.envs = fs.readdirSync('./').filter(function (file) { return file.lastIndexOf('.env') === 0; });
-                        console.log(this.envs);
+                        this.envs = fs.readdirSync('./').filter(function (file) { return file.indexOf('.env') > -1; });
                         _a = this;
                         return [4, prompts([{
                                     type: 'select',
@@ -187,6 +186,7 @@ var EnvCli = (function () {
     EnvCli.prototype.saveAndContinue = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
+                this.save();
                 this.whatToDo();
                 return [2];
             });
