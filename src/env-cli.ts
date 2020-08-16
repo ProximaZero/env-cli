@@ -6,12 +6,9 @@ import * as dotenv from 'dotenv';
 export class EnvCli {
     private options: prompts.Answers<"fileEnv" | "pwd">;
     private envParsed: dotenv.DotenvParseOutput;
-    // private envKeys: string[];
     private envs: string[];
     private envFile: string;
-
     async main() {
-
         this.envs = fs.readdirSync('./').filter((file) => file.indexOf('.env') > -1);
         this.options = (await prompts([{
             type: 'select',
@@ -23,21 +20,17 @@ export class EnvCli {
                         title: f, value: f
                     }
                 }),
-
         },
         {
             type: 'password',
             name: 'pwd',
             message: 'Senha de segurança',
         }]));
-
         this.envParsed = dotenv.parse(fs.readFileSync(this.envFile = this.options.fileEnv));
-        // this.envKeys = Object.keys(this.envParsed);
         if (this.envParsed.ENV_VALIDADE_HASH !== undefined) {
             let validadeHash = this.envParsed.ENV_VALIDADE_HASH;
             delete this.envParsed.ENV_VALIDADE_HASH;
 
-            /// KEY = PASS + HASH
             const KEY = Crypto.HmacSHA256(validadeHash, this.options.pwd);
 
             Object.keys(this.envParsed).forEach(prop => {
@@ -46,34 +39,12 @@ export class EnvCli {
                     padding: Crypto.pad.Pkcs7,
                     mode: Crypto.mode.CBC
                 });
-                /// console.log(KEY.salt);
                 this.envParsed[prop] = value.toString(Crypto.enc.Utf8);
             });
-
-            // console.info(KEY.toString());
-
-            //  let cipher = Crypto.AES.encrypt('teste', Crypto.enc.Utf8.parse(KEY.toString()), {
-            //      iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
-            //      padding: Crypto.pad.Pkcs7,
-            //      mode: Crypto.mode.CBC
-            //  }).toString();
-
-            // 
-            // console.info(cipher.toString());
-            // 
-            // 
-            // let qqq = Crypto.AES.decrypt(cipher, Crypto.enc.Utf8.parse(KEY.toString()), {
-            //     iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
-            //     padding: Crypto.pad.Pkcs7,
-            //     mode: Crypto.mode.CBC
-            // });
-            // 
-            // console.info(qqq.toString(Crypto.enc.Utf8));
-
         }
         this.whatToDo();
     }
-
+    // TODO: validade pass
     async whatToDo() {
         const opt: number |
             'addNewPropAndVar' |
@@ -103,19 +74,15 @@ export class EnvCli {
             this.edit(opt);
         }
     }
-
     async edit(prop: number) {
         var newValue = (await prompts({
             type: 'text',
             name: 'newValue',
             message: `Novo valor para ${Object.keys(this.envParsed)[prop]}`,
         })).newValue;
-
         this.envParsed[Object.keys(this.envParsed)[prop]] = newValue;
-
         this.whatToDo();
     }
-
     async addNewPropAndVar() {
         let options = (await prompts([
             {
@@ -129,11 +96,9 @@ export class EnvCli {
                 message: `Valor`,
             },
         ]));
-
         this.envParsed[options.propertyName] = options.propertyValue;
         this.whatToDo();
     }
-
     async readVar() {
 
         this.whatToDo();
@@ -146,29 +111,21 @@ export class EnvCli {
         let envFile = '# written with env-cli \n';
         let hash: string = Crypto.HmacSHA256(this.options.pwd, 'AZ').toString();
         envFile += `\n`;
-
-
         Object.keys(this.envParsed).forEach(prop => {
             try {
                 hash = Crypto.HmacSHA256(String(this.envParsed[prop]), hash).toString();
             } catch (e) { console.error(e); }
         });
-
-        /// KEY = PASS + HASH
         const KEY = Crypto.HmacSHA256(hash, this.options.pwd);
-
         Object.keys(this.envParsed).forEach(prop => {
             let value = this.envParsed[prop];
-
             value = Crypto.AES.encrypt(value, Crypto.enc.Utf8.parse(KEY.toString()), {
                 iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
                 padding: Crypto.pad.Pkcs7,
                 mode: Crypto.mode.CBC
             }).toString();
-
             envFile += `${prop}=${value}\n`;
         });
-
         envFile += `\n`;
         envFile += `ENV_VALIDADE_HASH=${hash} \n`;
         envFile += '# do not edit manually';
@@ -184,6 +141,4 @@ export class EnvCli {
         console.log('Bye!');
     }
 }
-
-
 (async () => new EnvCli().main())().then();
