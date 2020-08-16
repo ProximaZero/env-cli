@@ -8,6 +8,9 @@ export class EnvCli {
     private envParsed: dotenv.DotenvParseOutput;
     private envs: string[];
     private envFile: string;
+    private meta: any = {};
+    private uMeta: any = { dt: Date.now() };
+    private hashVerify: string;
     async main() {
         this.envs = fs.readdirSync('./').filter((file) => file.indexOf('.env') > -1);
         this.options = (await prompts([{
@@ -27,8 +30,12 @@ export class EnvCli {
             message: 'Senha de segurança',
         }]));
         this.envParsed = dotenv.parse(fs.readFileSync(this.envFile = this.options.fileEnv));
+        if (this.envParsed.METADATA !== undefined) {
+            this.meta = JSON.parse(Buffer.from(this.envParsed.METADATA, 'base64').toString());
+            delete this.envParsed.METADATA;
+        }
         if (this.envParsed.ENV_VALIDADE_HASH !== undefined) {
-            let validadeHash = this.envParsed.ENV_VALIDADE_HASH;
+            let validadeHash = this.hashVerify = this.envParsed.ENV_VALIDADE_HASH;
             delete this.envParsed.ENV_VALIDADE_HASH;
 
             const KEY = Crypto.HmacSHA256(validadeHash, this.options.pwd);
@@ -42,7 +49,62 @@ export class EnvCli {
                 this.envParsed[prop] = value.toString(Crypto.enc.Utf8);
             });
         }
-        this.whatToDo();
+        this.menu();
+    }
+    async setHist() {
+        if (!this.meta.hist) {
+            this.meta.hist = [];
+        }
+        if (this.meta.hist.indexOf(this.uMeta > -1)) {
+            this.meta.hist.push(this.uMeta);
+        }
+        require('child_process').exec('git config --global user.email', (err: any, stdout: any, stderr: any) => {
+            if (stdout) {
+                if (this.uMeta.user === undefined)
+                    this.uMeta.user = {};
+
+                this.uMeta.user.email = String(stdout).slice(0, -1);
+            }
+        });
+        require('child_process').exec('git config --global user.name', (err: any, stdout: any, stderr: any) => {
+            if (stdout) {
+                if (this.uMeta.user === undefined)
+                    this.uMeta.user = {};
+
+                this.uMeta.user.name = String(stdout).slice(0, -1);
+            }
+        });
+    }
+    async menu() {
+        await this.navigate([
+            { name: 'View', fn: () => this.whatToDo() },
+            { name: 'Edit', fn: () => { this.setHist(); this.whatToDo() } },
+            { name: 'Audit', fn: () => this.audit() },
+            { name: 'Create .PassEnv', fn: () => this.createPassEnv() },
+        ])
+    }
+    async audit() {
+        await this.navigate([
+            {
+                name: 'Show History', fn: () => {
+                    if (Array.isArray(this.meta.hist)) {
+                        Array(...this.meta.hist).forEach(inf => {
+                            console.log(` ${new Date(inf.dt)} - ${inf.user?.name || 'non-name'} - ${inf.user?.email || 'non-email'}`);
+                        });
+                    }
+                }
+            },
+        ]);
+    }
+    async navigate(itens: { name: string, fn: () => void }[]) {
+        itens[(await prompts([
+            {
+                message: 'Menu',
+                type: 'select',
+                name: 'option',
+                choices: itens.map((item, i) => { return { title: item.name, value: i } }),
+            },
+        ])).option].fn();
     }
     // TODO: validade pass
     async whatToDo() {
@@ -127,18 +189,40 @@ export class EnvCli {
             envFile += `${prop}=${value}\n`;
         });
         envFile += `\n`;
+
         envFile += `ENV_VALIDADE_HASH=${hash} \n`;
+        envFile += `METADATA=${Buffer.from(JSON.stringify(this.meta)).toString('base64')} \n`;
         envFile += '# do not edit manually';
 
         fs.writeFileSync(this.envFile, envFile);
     }
     async saveAndExit() {
         await this.save();
+        this.createPassEnv();
         console.log('Saved, bye!');
     }
     async cancel() {
         console.log(this.envParsed);
         console.log('Bye!');
+    }
+
+    createPassEnv() {
+        const pkg = (JSON.parse(fs.readFileSync('./package.json').toString()));
+        const pkgInf = `${pkg.name || '' + pkg.description || '' + pkg.author || '' + pkg.license || ''}`;
+        const kProject = Crypto.HmacSHA256(this.hashVerify, pkgInf);
+
+        const KEY = Crypto.HmacSHA256(this.hashVerify, this.options.pwd);
+        let passenv = `${Crypto.enc.Utf8.parse(KEY.toString())},${Crypto.enc.Utf8.parse(KEY.iv)}`;
+
+        passenv = Crypto.AES.encrypt(passenv, Crypto.enc.Utf8.parse(kProject.toString()), {
+            iv: Crypto.enc.Utf8.parse(kProject.iv), // parse the IV 
+            padding: Crypto.pad.Pkcs7,
+            mode: Crypto.mode.CBC
+        }).toString();
+
+        passenv = Buffer.from(passenv).toString('base64');
+
+        fs.writeFileSync('./.passEnv', passenv);
     }
 }
 (async () => new EnvCli().main())().then();
