@@ -11,6 +11,7 @@ export class EnvCli {
     private meta: any = {};
     private uMeta: any = { dt: Date.now() };
     private hashVerify: string;
+    private envPrefix = '';
     async main() {
         this.envs = fs.readdirSync('./').filter((file) => file.indexOf('.env') > -1);
         this.options = (await prompts([{
@@ -30,6 +31,9 @@ export class EnvCli {
             message: 'Senha de segurança',
         }]));
         this.envParsed = dotenv.parse(fs.readFileSync(this.envFile = this.options.fileEnv));
+        if (this.envFile.lastIndexOf('.')) {
+            this.envPrefix = this.envFile.substr(0, this.envFile.lastIndexOf('.'));
+        }
         if (this.envParsed.METADATA !== undefined) {
             this.meta = JSON.parse(Buffer.from(this.envParsed.METADATA, 'base64').toString());
             delete this.envParsed.METADATA;
@@ -222,7 +226,7 @@ export class EnvCli {
 
         passenv = Buffer.from(passenv).toString('base64');
 
-        fs.writeFileSync('./.passEnv', passenv);
+        fs.writeFileSync(`./${this.envPrefix}.passEnv`, passenv);
     }
 }
 (async () => new EnvCli().main())().then();
