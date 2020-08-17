@@ -20,14 +20,9 @@ export class Environment {
 
     private loadPassEnvFile(file: string) {
         this.passEnv = fs.readFileSync(file).toString();
-        console.log('passEnv64', this.passEnv);
         this.passEnv = Buffer.from(this.passEnv, 'base64').toString();
-        console.log('passEnv', this.passEnv);
 
         const keyProject = this.getReaderKey();
-        console.log('keyPackage', keyProject);
-        console.log('keyPackage', keyProject.toString());
-
         this.passEnv = Crypto.AES.decrypt(this.passEnv,
             Crypto.enc.Utf8.parse(keyProject.toString()),
             {
@@ -35,14 +30,10 @@ export class Environment {
                 padding: Crypto.pad.Pkcs7,
                 mode: Crypto.mode.CBC
             }).toString(Crypto.enc.Utf8);
-
-        console.log('passEnv', this.passEnv);
     }
 
     private loadEnvironmentFile(file: string) {
         const envVars = this.env = dotenv.parse(fs.readFileSync(file));
-        console.log(envVars);
-        console.log(this.getReaderKey());
     }
 
     getValueByPropertyName(propertyName: string) {
@@ -52,5 +43,11 @@ export class Environment {
             padding: Crypto.pad.Pkcs7,
             mode: Crypto.mode.CBC
         }).toString(Crypto.enc.Utf8);
+    }
+
+    getMapPropertiesValues(properties: string[]) {
+        let propertiesValues: { [prop: string]: string } = {};
+        properties.forEach(propertie => propertiesValues.propertie = this.getValueByPropertyName(propertie));
+        return propertiesValues;
     }
 }
