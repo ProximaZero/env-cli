@@ -203,6 +203,7 @@ export class EnvCli {
         envFile += '# do not edit manually';
 
         fs.writeFileSync(this.envFile, envFile);
+        this.hashVerify = hash;
     }
     async saveAndExit() {
         await this.save();
@@ -219,11 +220,13 @@ export class EnvCli {
         const KEY = Crypto.HmacSHA256(this.hashVerify, this.options.pwd);
 
         let passenv = `${Crypto.enc.Utf8.parse(KEY.toString())},${Crypto.enc.Utf8.parse(KEY.iv)}`;
+        console.log('passenv', passenv);
         passenv = Crypto.AES.encrypt(passenv, Crypto.enc.Utf8.parse(keyProject.toString()), {
             iv: Crypto.enc.Utf8.parse(keyProject.iv), // parse the IV 
             padding: Crypto.pad.Pkcs7,
             mode: Crypto.mode.CBC
         }).toString();
+        console.log('passenv', passenv);
         passenv = Buffer.from(passenv).toString('base64');
         fs.writeFileSync(`./${this.envPrefix}.passEnv`, passenv);
     }

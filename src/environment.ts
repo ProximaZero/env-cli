@@ -28,8 +28,7 @@ export class Environment {
         console.log('keyPackage', keyProject);
         console.log('keyPackage', keyProject.toString());
 
-        this.passEnv = Crypto.AES.decrypt(
-            this.passEnv,
+        this.passEnv = Crypto.AES.decrypt(this.passEnv,
             Crypto.enc.Utf8.parse(keyProject.toString()),
             {
                 iv: Crypto.enc.Utf8.parse(keyProject.iv), // parse the IV 
@@ -53,23 +52,5 @@ export class Environment {
             padding: Crypto.pad.Pkcs7,
             mode: Crypto.mode.CBC
         }).toString(Crypto.enc.Utf8);
-
-        // return;
-        // const passenv = Crypto.AES.decrypt(this.passEnv, Crypto.enc.Utf8.parse(keyProject.toString()), {
-        //     iv: Crypto.enc.Utf8.parse(keyProject.iv), // parse the IV 
-        //     padding: Crypto.pad.Pkcs7,
-        //     mode: Crypto.mode.CBC
-        // }).toString(Crypto.enc.Utf8);
-        // 
-        // console.log('passenv', passenv);
-        // console.log('propEncripted', this.env[propertyName]);
-
-        //* let value = Crypto.AES.decrypt(this.env[propertyName], `${Crypto.enc.Utf8.//* parse(passenv.split(',')[0])}`, {
-        //*     iv: `${Crypto.enc.Utf8.parse(passenv.split(',')[1])}`, // parse the IV 
-        //*     padding: Crypto.pad.Pkcs7,
-        //*     mode: Crypto.mode.CBC
-        //* });
-        //* return value.toString();
     }
-
 }
