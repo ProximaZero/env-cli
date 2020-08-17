@@ -41,12 +41,11 @@ export class EnvCli {
         if (this.envParsed.ENV_VALIDADE_HASH !== undefined) {
             let validadeHash = this.hashVerify = this.envParsed.ENV_VALIDADE_HASH;
             delete this.envParsed.ENV_VALIDADE_HASH;
-
             const KEY = Crypto.HmacSHA256(validadeHash, this.options.pwd);
 
             Object.keys(this.envParsed).forEach(prop => {
-                let value = Crypto.AES.decrypt(this.envParsed[prop], Crypto.enc.Utf8.parse(KEY.toString()), {
-                    iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
+                let value = Crypto.AES.decrypt(this.envParsed[prop], `${Crypto.enc.Utf8.parse(KEY.toString())}`, {
+                    iv: `${Crypto.enc.Utf8.parse(KEY.iv)}`, // parse the IV 
                     padding: Crypto.pad.Pkcs7,
                     mode: Crypto.mode.CBC
                 });
@@ -55,7 +54,12 @@ export class EnvCli {
         }
         this.menu();
     }
-    async setHist() {
+
+    async getGitUserEmail() {
+
+    }
+
+    async addModificationHistory() {
         if (!this.meta.hist) {
             this.meta.hist = [];
         }
@@ -82,7 +86,7 @@ export class EnvCli {
     async menu() {
         await this.navigate([
             { name: 'View', fn: () => this.whatToDo() },
-            { name: 'Edit', fn: () => { this.setHist(); this.whatToDo() } },
+            { name: 'Edit', fn: () => { this.addModificationHistory(); this.whatToDo() } },
             { name: 'Audit', fn: () => this.audit() },
             { name: 'Create .PassEnv', fn: () => this.createPassEnv() },
         ])
@@ -185,8 +189,8 @@ export class EnvCli {
         const KEY = Crypto.HmacSHA256(hash, this.options.pwd);
         Object.keys(this.envParsed).forEach(prop => {
             let value = this.envParsed[prop];
-            value = Crypto.AES.encrypt(value, Crypto.enc.Utf8.parse(KEY.toString()), {
-                iv: Crypto.enc.Utf8.parse(KEY.iv), // parse the IV 
+            value = Crypto.AES.encrypt(value, `${Crypto.enc.Utf8.parse(KEY.toString())}`, {
+                iv: `${Crypto.enc.Utf8.parse(KEY.iv)}`, // parse the IV 
                 padding: Crypto.pad.Pkcs7,
                 mode: Crypto.mode.CBC
             }).toString();
@@ -206,26 +210,21 @@ export class EnvCli {
         console.log('Saved, bye!');
     }
     async cancel() {
-        console.log(this.envParsed);
-        console.log('Bye!');
+        console.log('Bye bye!');
     }
-
     createPassEnv() {
         const pkg = (JSON.parse(fs.readFileSync('./package.json').toString()));
         const pkgInf = `${pkg.name || '' + pkg.description || '' + pkg.author || '' + pkg.license || ''}`;
-        const kProject = Crypto.HmacSHA256(this.hashVerify, pkgInf);
-
+        const keyProject = Crypto.HmacSHA256(this.hashVerify, pkgInf);
         const KEY = Crypto.HmacSHA256(this.hashVerify, this.options.pwd);
-        let passenv = `${Crypto.enc.Utf8.parse(KEY.toString())},${Crypto.enc.Utf8.parse(KEY.iv)}`;
 
-        passenv = Crypto.AES.encrypt(passenv, Crypto.enc.Utf8.parse(kProject.toString()), {
-            iv: Crypto.enc.Utf8.parse(kProject.iv), // parse the IV 
+        let passenv = `${Crypto.enc.Utf8.parse(KEY.toString())},${Crypto.enc.Utf8.parse(KEY.iv)}`;
+        passenv = Crypto.AES.encrypt(passenv, Crypto.enc.Utf8.parse(keyProject.toString()), {
+            iv: Crypto.enc.Utf8.parse(keyProject.iv), // parse the IV 
             padding: Crypto.pad.Pkcs7,
             mode: Crypto.mode.CBC
         }).toString();
-
         passenv = Buffer.from(passenv).toString('base64');
-
         fs.writeFileSync(`./${this.envPrefix}.passEnv`, passenv);
     }
 }

@@ -15,10 +15,10 @@
         "baseUrl": "./",
         "incremental": true,
         "paths": {
-            "@prozero/authorization": [
+            "@prozero/env-cli": [
                 "src"
             ],
-            "@prozero/authorization/*": [
+            "@prozero/env-cli/*": [
                 "src/*"
             ]
         }
