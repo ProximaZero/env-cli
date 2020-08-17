@@ -1,12 +1,27 @@
 {
     "compilerOptions": {
         "module": "CommonJS",
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
         "sourceRoot": "src/",
-        "outDir": "dist",
+        "target": "es2017",
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "incremental": true,
+        "paths": {
+            "@prozero/env-cli": [
+                "src"
+            ],
+            "@prozero/env-cli/*": [
+                "src/*"
+            ]
+        }
     },
     "include": [
         "src/**/*"
