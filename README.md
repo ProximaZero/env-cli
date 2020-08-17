@@ -1,16 +1,18 @@
-# PróZero Env-CLI
+# ProZero Env-CLI
 
-Read end Write `.env` encripted files for PróZero Solutions.
+Create `.env` file encripted for npm packages.
 
 ## How to use and dev test
 
 1.
 ```
-    npm install
+    npm install -g ./
 ```
-2.
+2. Add `*.envPass` on `.gitignore` file. 
+
+3.
 ```
-    npm run start
+    env-cli
 ```
 
 ---
