@@ -1,5 +1,5 @@
 {
-  "name": "@prozero/gen-env",
+  "name": "@zero/env",
   "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
