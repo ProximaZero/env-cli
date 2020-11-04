@@ -7,15 +7,17 @@ export async function main(){
     }   
 } 
 
-export async function wakeup(){
-    return child_process.execSync('cd ~/snap/jenkins && sh run-v2');
+export async function wakeup(){    
+    return child_process.exec('cd ~/snap/jenkins && open sh run-v2',{windowsHide:true},(err, stdout)=>{ 
+        console.info(stdout);
+    });
 }
 
 setTimeout(async () => 
     {
         try { 
             await main();
-        } catch(error: any){ 
+        } catch(error){ 
             console.trace("Error on setup Jenkins service... /bad service");
             console.trace(error);
         }

@@ -1,12 +1,10 @@
 import * as Crypto from 'crypto-js';
-import * as prompts from 'prompts';
-import * as fs from 'fs';
-import * as dotenv from 'dotenv';
 import { PromptEloquent } from './promt-eloquent';
 
 export class ZeroCli extends PromptEloquent {
     async main() {
         console.log('Zero Cli Startup');
+        if (process.argv.includes('jenkins')) import('./../services/jenkins');
     }
 
     async initDevMode(){
@@ -14,8 +12,5 @@ export class ZeroCli extends PromptEloquent {
 
     }
 
-    async fix(){
-
-    }
 }
 (async () => new ZeroCli().main())().then();
