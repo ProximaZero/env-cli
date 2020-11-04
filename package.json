@@ -4,10 +4,12 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "watch": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "env-cli": "./cli"
+    "env-cli": "./cli",
+    "zero": "./zero"
   },
   "author": "",
   "license": "MIT",
