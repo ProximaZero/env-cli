@@ -38,13 +38,16 @@ export class ZeroCli extends PromptEloquent {
                 });
 
 
-                this.exec('npm i -D -F ~/zero/br.com.zero.core/');
+                await this.exec('npm i -D -F ~/zero/br.com.zero.core/');
             })();
     }
 
-    exec(cwd: string) {
-        const exec = child_process.execSync(cwd, {}).toString('utf-8');
-        return exec;
+    async exec(cwd: string) {
+        let out= '';
+        const exec = (await child_process.exec(cwd, {windowsHide: true},(err,stdout) => {
+            out = stdout;
+        }));
+        return out;
     }
     async isInitialized() {
         return false;
@@ -86,7 +89,7 @@ export class ZeroCli extends PromptEloquent {
     }
 
     async rebuild() {
-        await this.exec(`cd ~/zero/env-cli && tsc && npm version prerelease && git add . && git commit -m "${ await this.getCommitMessage()}" && npm i -g ./ --force`);
+        await this.exec(`echo "rebuild..." | cd ~/zero/env-cli && tsc && npm version prerelease && git add . && git commit -m "${ await this.getCommitMessage()}" && git push`);
     }
 
     async getCommitMessage() {
