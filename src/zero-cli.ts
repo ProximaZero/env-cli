@@ -89,7 +89,7 @@ export class ZeroCli extends PromptEloquent {
     }
 
     async rebuild() {
-        await this.exec(`echo "rebuild..." | cd ~/zero/env-cli && tsc && npm version prerelease && git add . && git commit -m "${ await this.getCommitMessage()}" && git push`);
+        await this.exec(`cd ~/zero/env-cli && tsc && npm version prerelease && git add . && git commit -m "${ await this.getCommitMessage()}" && git push`);
     }
 
     async getCommitMessage() {
