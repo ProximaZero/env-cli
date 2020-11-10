@@ -86,7 +86,7 @@ export class ZeroCli extends PromptEloquent {
     }
 
     async rebuild() {
-        await this.exec(`cd ~/zero/env-cli && tsc && npm version prerelease && git add . && git commit -m "${this.getCommitMessage()}" && npm i -g ./ --force`);
+        await this.exec(`cd ~/zero/env-cli && tsc && npm version prerelease && git add . && git commit -m "${ await this.getCommitMessage()}" && npm i -g ./ --force`);
     }
 
     async getCommitMessage() {
@@ -95,11 +95,10 @@ export class ZeroCli extends PromptEloquent {
         
         const currentDate = new Date();
         
-        const jiraBranchName: string = null || 'UND';
-        const jiraBranchID: string =  null || '0'
+        const jiraBranchName: string = '' || 'UND';
+        const jiraBranchID: string =  '' || '0'
         const jiraItemType: 'task' | 'error' | 'epic' = 'task';
         const changes : string = '### Changes: ' +
-        '---' +
         '';
         return `${
             jiraBranchName.toUpperCase()
